@@ -11,3 +11,25 @@ body {
   background-position: center;
   background-size: cover;
 }
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}
+input:focus {
+  outline: 1px solid #02234d8a;
+}
+
+.input-success {
+  border: 1px solid rgba(0, 128, 0, 0.785);
+}
+
+.input-error {
+  border: 1px solid rgba(255, 0, 0, 0.776);
+}
+
+label {
+  cursor: pointer;
+}

@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthProvider";
 import Logo from "../../assets/images/logo.png";
+import UserAvatar from "../../assets/images/avatar.png";
 
 const Header = () => {
   const { user, logout } = useContext(AuthContext);
@@ -11,12 +12,16 @@ const Header = () => {
     setMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const defaultUserAvatar = "";
+  const defaultUserAvatar = user?.photoURL || UserAvatar;
 
   const navigate = useNavigate();
 
   const handleRedirectLogin = () => {
     navigate("/login");
+  };
+
+  const handleRedirectRegister = () => {
+    navigate("/register");
   };
 
   return (
@@ -55,9 +60,9 @@ const Header = () => {
                   </div>
                   <button
                     onClick={logout}
-                    className="btn btn-sm border-[#02224d] hidden md:block"
+                    className="btn btn-sm font-normal bg-[#000] text-white rounded-sm ml-5"
                   >
-                    SignOut
+                    Log-out
                   </button>
                 </>
               ) : (
@@ -68,7 +73,10 @@ const Header = () => {
                   >
                     Log-in
                   </button>
-                  <button className="hidden md:block btn bg-[#000] text-white px-8 rounded-sm ml-5">
+                  <button
+                    onClick={handleRedirectRegister}
+                    className="hidden md:block btn bg-[#000] text-white px-8 rounded-sm ml-5"
+                  >
                     Sign Up
                   </button>
                 </>
@@ -118,7 +126,15 @@ const Header = () => {
                         onClick={handleRedirectLogin}
                         className="btn btn-sm md:hidden bg-[#000] text-white px-8 rounded-sm"
                       >
-                        Sign In
+                        Log-in
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={handleRedirectRegister}
+                        className="btn btn-sm md:hidden bg-[#000] text-white px-8 rounded-sm"
+                      >
+                        Sign Up
                       </button>
                     </li>
                   </>
