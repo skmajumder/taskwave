@@ -11,11 +11,8 @@ const Tasks = () => {
   const [dueDate, setDueDate] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [isEdited, setIsEdited] = useState(false);
-
-  const [filteredTasks, setFilteredTasks] = useState([]);
   const [showCompleted, setShowCompleted] = useState(false);
-
-  console.log(user);
+  const [dueDateFilter, setDueDateFilter] = useState("");
 
   useEffect(() => {
     const tasksRef = ref(db, "tasks");
@@ -30,10 +27,9 @@ const Tasks = () => {
         applyFilters(taskList);
       } else {
         setTasks([]);
-        setFilteredTasks([]);
       }
     });
-  }, []);
+  }, [showCompleted, dueDateFilter]);
 
   const handleCreateTask = () => {
     const tasksRef = ref(db, "tasks");
@@ -112,17 +108,30 @@ const Tasks = () => {
       });
   };
 
-  const applyFilters = (taskList) => {
-    let filteredList = taskList;
-    if (!showCompleted) {
-      filteredList = filteredList.filter((task) => !task.completed);
-    }
-    setFilteredTasks(filteredList);
-  };
-
   const handleFilterCompleted = () => {
     setShowCompleted(!showCompleted);
     applyFilters(tasks);
+  };
+
+  const handleFilterDueDate = (e) => {
+    setDueDateFilter(e.target.value);
+    applyFilters(tasks);
+  };
+
+  const applyFilters = (taskList) => {
+    let filteredList = taskList;
+
+    if (showCompleted) {
+      filteredList = filteredList.filter((task) => !task.completed === false);
+    }
+
+    if (dueDateFilter !== "") {
+      filteredList = filteredList.filter(
+        (task) => task.dueDate === dueDateFilter
+      );
+    }
+
+    setTasks(filteredList);
   };
 
   return (
@@ -188,6 +197,7 @@ const Tasks = () => {
             )}
           </form>
 
+          {/* By Completed */}
           <div className="flex items-center">
             <label className="mr-2">Show Completed:</label>
             <input
@@ -196,6 +206,20 @@ const Tasks = () => {
               onChange={handleFilterCompleted}
             />
           </div>
+
+          {/* By Due Date */}
+          <div className="flex items-center">
+            <label className="mr-2">Due Date:</label>
+            <select
+              value={dueDateFilter}
+              onChange={handleFilterDueDate}
+              className="form-select"
+            >
+              <option value="">All</option>
+              <option value="2023-06-30">2023-06-08</option>
+            </select>
+          </div>
+
           <h2>Task List</h2>
           <div className="overflow-x-auto mb-10">
             <table className="table w-full">
