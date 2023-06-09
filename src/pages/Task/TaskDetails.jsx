@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, push } from "firebase/database";
 import { db } from "../../firebase/firebase.config";
+import useAuth from "../../hooks/useAuth";
 
 const TaskDetails = () => {
   const { id: taskID } = useParams();
+  const { user } = useAuth();
 
   const [task, setTask] = useState({});
   const [comment, setComment] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
+    const userEmail = user.email;
+    setUserEmail(userEmail);
+
     const taskRef = ref(db, `tasks/${taskID}`);
     onValue(taskRef, (snapshot) => {
       const taskData = snapshot.val();
@@ -22,7 +28,7 @@ const TaskDetails = () => {
   }, [taskID]);
 
   if (!task) {
-    return <div>Loading...</div>; // or handle the null case appropriately
+    return <div>Loading...</div>;
   }
 
   const handleCommentChange = (e) => {
@@ -31,10 +37,24 @@ const TaskDetails = () => {
 
   const handleSubmitComment = (e) => {
     e.preventDefault();
-    // Handle submitting the comment to the task
-    // You can call the addComment function here or use any other method to add the comment
-    // Reset the comment input field
-    setComment("");
+
+    if (comment.trim() === "") {
+      return; // Don't submit empty comments
+    }
+
+    const newComment = {
+      user: userEmail,
+      text: comment,
+    };
+
+    push(ref(db, `tasks/${taskID}/comments`), newComment)
+      .then(() => {
+        console.log("Comment added successfully!");
+        setComment("");
+      })
+      .catch((error) => {
+        console.error("Error adding comment:", error);
+      });
   };
 
   return (
@@ -60,14 +80,17 @@ const TaskDetails = () => {
           </div>
           <h3 className="text-xl font-bold mb-2">Comments</h3>
           <div className="bg-white rounded-lg shadow p-4 mb-4">
-            {task?.comments?.length > 0 ? (
+            {Object.keys(task?.comments || {}).length > 0 ? (
               <ul>
-                {task?.comments.map((comment, index) => (
-                  <li key={index} className="mb-2">
-                    <span className="font-bold">{comment.user}: </span>
-                    <span>{comment.text}</span>
-                  </li>
-                ))}
+                {Object.keys(task?.comments).map((commentKey) => {
+                  const comment = task.comments[commentKey];
+                  return (
+                    <li key={commentKey} className="mb-2">
+                      <span className="font-bold">{comment.user}: </span>
+                      <span>{comment.text}</span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p>No comments yet.</p>

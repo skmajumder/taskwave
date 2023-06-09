@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { ref, push, onValue, remove, update } from "firebase/database";
 import useAuth from "../../hooks/useAuth";
 import { db } from "../../firebase/firebase.config";
-import { FaCommentAlt, FaPen, FaTrash } from "react-icons/fa";
+import {
+  FaCommentAlt,
+  FaExternalLinkAlt,
+  FaPen,
+  FaTrash,
+} from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import TaskDetails from "./TaskDetails";
 
@@ -389,7 +394,7 @@ const Tasks = () => {
                         title="Comment"
                         className="btn btn-sm btn-blue mb-1 ml-2"
                       >
-                        <FaCommentAlt />
+                        <FaExternalLinkAlt />
                       </button>
                     </td>
                   </tr>
