@@ -7,12 +7,16 @@ const Tasks = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [filteredTasks, setFilteredTasks] = useState([]);
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [completed, setCompleted] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isEdited, setIsEdited] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [dueDateFilter, setDueDateFilter] = useState("");
+
+  console.log(tasks);
 
   useEffect(() => {
     const tasksRef = ref(db, "tasks");
@@ -27,6 +31,7 @@ const Tasks = () => {
         applyFilters(taskList);
       } else {
         setTasks([]);
+        setFilteredTasks([]);
       }
     });
   }, [showCompleted, dueDateFilter]);
@@ -131,7 +136,7 @@ const Tasks = () => {
       );
     }
 
-    setTasks(filteredList);
+    setFilteredTasks(filteredList);
   };
 
   return (
@@ -167,6 +172,18 @@ const Tasks = () => {
                 className="form-input mt-1 block w-full rounded-md shadow-sm"
               />
             </div>
+            {!completed ? (
+              <>
+                <label className="block text-gray-700">completed</label>
+                <select className="form-select">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </>
+            ) : (
+              ""
+            )}
+            <div className="mb-4"></div>
             {isEdited ? (
               <>
                 <button
@@ -216,7 +233,9 @@ const Tasks = () => {
               className="form-select"
             >
               <option value="">All</option>
-              <option value="2023-06-30">2023-06-08</option>
+              {tasks.map((task) => (
+                <option value={task.dueDate}>{task.dueDate}</option>
+              ))}
             </select>
           </div>
 
@@ -234,7 +253,7 @@ const Tasks = () => {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((task, index) => (
+                {filteredTasks.map((task, index) => (
                   <tr key={task.id}>
                     <td>{index + 1}</td>
                     <td>
