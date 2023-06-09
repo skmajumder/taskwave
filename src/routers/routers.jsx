@@ -5,6 +5,9 @@ import Home from "../pages/Home/Home";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
+import Tasks from "../pages/Task/Tasks";
+import TaskLayout from "../layouts/TaskLayout/TaskLayout";
+import PrivateRouter from "./PrivateRouter";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +30,21 @@ const router = createBrowserRouter([
       {
         path: "reset-password",
         element: <ForgotPassword />,
+      },
+    ],
+  },
+  {
+    path: "task",
+    element: <TaskLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "/task",
+        element: (
+          <PrivateRouter>
+            <Tasks />
+          </PrivateRouter>
+        ),
       },
     ],
   },

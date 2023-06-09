@@ -33,3 +33,7 @@ input:focus {
 label {
   cursor: pointer;
 }
+
+.section {
+  padding: 50px 0;
+}

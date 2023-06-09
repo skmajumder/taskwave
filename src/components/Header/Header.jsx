@@ -36,19 +36,21 @@ const Header = () => {
             </div>
             <nav className="w-6/12 hidden md:block">
               {/* Navigation menu */}
-              <ul className="flex md:justify-start space-x-6 text-[16px] text-[#000] font-normal leading-6">
+              <ul className="flex justify-center space-x-6 text-[16px] text-[#000] font-normal leading-6">
                 <li>
                   <Link to={"/"}>Home</Link>
                 </li>
-                <li>
-                  <Link to={"/"}>Feature</Link>
-                </li>
+                {user && (
+                  <li>
+                    <Link to={"/task"}>Task</Link>
+                  </li>
+                )}
                 <li>
                   <Link to={"/"}>About</Link>
                 </li>
               </ul>
             </nav>
-            <div className="w-3/12 flex justify-start gap-0 md:gap-3">
+            <div className="w-3/12 flex justify-center gap-0 md:gap-3">
               {user ? (
                 <>
                   <div className="tooltip" data-tip={user?.displayName}>
