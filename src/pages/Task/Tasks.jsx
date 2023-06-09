@@ -96,7 +96,7 @@ const Tasks = () => {
       dueDate: dueDate,
       createdBy: selectedTask.createdBy,
       edited: true,
-      completed: true,
+      completed: completed,
     };
 
     update(taskRef, updatedTask)
@@ -139,6 +139,10 @@ const Tasks = () => {
     setFilteredTasks(filteredList);
   };
 
+  const handleCompletedTaskChange = (e) => {
+    setCompleted(e.target.value);
+  };
+
   return (
     <>
       <section className="section section-login">
@@ -172,10 +176,14 @@ const Tasks = () => {
                 className="form-input mt-1 block w-full rounded-md shadow-sm"
               />
             </div>
-            {!completed ? (
+            {isEdited ? (
               <>
-                <label className="block text-gray-700">completed</label>
-                <select className="form-select">
+                <label className="block text-gray-700">Task Completed!</label>
+                <select
+                  className="form-select form-input mt-1 block w-full rounded-md shadow-sm"
+                  value={completed}
+                  onChange={handleCompletedTaskChange}
+                >
                   <option value="true">Yes</option>
                   <option value="false">No</option>
                 </select>
@@ -227,11 +235,7 @@ const Tasks = () => {
           {/* By Due Date */}
           <div className="flex items-center">
             <label className="mr-2">Due Date:</label>
-            <select
-              value={dueDateFilter}
-              onChange={handleFilterDueDate}
-              className="form-select"
-            >
+            <select className="form-select">
               <option value="">All</option>
               {tasks.map((task) => (
                 <option value={task.dueDate}>{task.dueDate}</option>
@@ -260,7 +264,7 @@ const Tasks = () => {
                       {task.title}
                       {task.edited ? (
                         <>
-                          <span className="badge badge-accent badge-outline ml-3">
+                          <span className="badge badge-accent badge-outline ml-3 text-[8px]">
                             Edited
                           </span>
                         </>
@@ -269,7 +273,7 @@ const Tasks = () => {
                       )}
                       {task.completed ? (
                         <>
-                          <span className="badge badge-success badge-outline ml-3">
+                          <span className="badge badge-success badge-outline ml-3 text-[8px]">
                             Completed
                           </span>
                         </>
