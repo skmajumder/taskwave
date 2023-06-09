@@ -2,14 +2,9 @@ import React, { useState, useEffect } from "react";
 import { ref, push, onValue, remove, update } from "firebase/database";
 import useAuth from "../../hooks/useAuth";
 import { db } from "../../firebase/firebase.config";
-import {
-  FaCommentAlt,
-  FaExternalLinkAlt,
-  FaPen,
-  FaTrash,
-} from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
-import TaskDetails from "./TaskDetails";
+import { FaExternalLinkAlt, FaPen, FaTrash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Tasks = () => {
   const { user } = useAuth();
@@ -30,8 +25,6 @@ const Tasks = () => {
 
   const isAdmin = loggedUserData.admin || false;
   const navigate = useNavigate();
-
-  console.log(user);
 
   // * Read Tasks
   useEffect(() => {
@@ -74,7 +67,16 @@ const Tasks = () => {
     });
   }, []);
 
-  const handleCreateTask = () => {
+  const handleCreateTask = (e) => {
+    e.preventDefault();
+    if (!title || !description || !dueDate) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "You Must fill the required fields",
+      });
+      return;
+    }
     const tasksRef = ref(db, "tasks");
 
     const newTask = {
@@ -207,6 +209,7 @@ const Tasks = () => {
             <div className="mb-8">
               <label className="block text-gray-700">Title:</label>
               <input
+                required
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -216,6 +219,7 @@ const Tasks = () => {
             <div className="mb-8">
               <label className="block text-gray-700">Description:</label>
               <textarea
+                required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="form-textarea mt-1 block w-full rounded-md shadow-sm"
@@ -224,6 +228,7 @@ const Tasks = () => {
             <div className="mb-8">
               <label className="block text-gray-700">Due Date:</label>
               <input
+                required
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
@@ -234,6 +239,7 @@ const Tasks = () => {
               <div className="mb-8">
                 <label className="block text-gray-700">Assigning Tasks</label>
                 <select
+                  required
                   value={createdBy}
                   onChange={handleTaskCreatedBy}
                   className="form-select form-input mt-1 block w-full rounded-md shadow-sm"
@@ -251,6 +257,7 @@ const Tasks = () => {
                 <div className="mb-8">
                   <label className="block text-gray-700">Task Completed!</label>
                   <select
+                    required
                     className="form-select form-input mt-1 block w-full rounded-md shadow-sm"
                     value={completed}
                     onChange={handleCompletedTaskChange}

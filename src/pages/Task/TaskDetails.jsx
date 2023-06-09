@@ -39,7 +39,7 @@ const TaskDetails = () => {
     e.preventDefault();
 
     if (comment.trim() === "") {
-      return; // Don't submit empty comments
+      return;
     }
 
     const newComment = {
