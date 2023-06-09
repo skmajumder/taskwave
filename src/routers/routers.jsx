@@ -8,6 +8,7 @@ import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import Tasks from "../pages/Task/Tasks";
 import TaskLayout from "../layouts/TaskLayout/TaskLayout";
 import PrivateRouter from "./PrivateRouter";
+import TaskDetails from "../pages/Task/TaskDetails";
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRouter>
             <Tasks />
+          </PrivateRouter>
+        ),
+      },
+      {
+        path: ":id",
+        element: (
+          <PrivateRouter>
+            <TaskDetails />
           </PrivateRouter>
         ),
       },

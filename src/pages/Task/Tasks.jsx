@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { ref, push, onValue, remove, update } from "firebase/database";
 import useAuth from "../../hooks/useAuth";
 import { db } from "../../firebase/firebase.config";
+import { FaCommentAlt, FaPen, FaTrash } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import TaskDetails from "./TaskDetails";
 
 const Tasks = () => {
   const { user } = useAuth();
@@ -21,6 +24,7 @@ const Tasks = () => {
   const [dueDateFilter, setDueDateFilter] = useState("");
 
   const isAdmin = loggedUserData.admin || false;
+  const navigate = useNavigate();
 
   console.log(user);
 
@@ -74,6 +78,7 @@ const Tasks = () => {
       dueDate: dueDate,
       createdBy: createdBy,
       userName: userName,
+      comments: [],
       edited: false,
       completed: false,
       assignByAdmin: isAdmin,
@@ -181,6 +186,10 @@ const Tasks = () => {
     );
     console.log("assignUser", assignUser);
     setUserName(assignUser.name);
+  };
+
+  const handleTaskDetails = (taskID) => {
+    navigate(`/task/${taskID}`);
   };
 
   return (
@@ -308,7 +317,6 @@ const Tasks = () => {
             <table className="table w-full">
               <thead>
                 <tr>
-                  <th>#</th>
                   <th>Title</th>
                   <th>Description</th>
                   <th>Due Date</th>
@@ -320,7 +328,6 @@ const Tasks = () => {
               <tbody>
                 {filteredTasks.map((task, index) => (
                   <tr key={task.id}>
-                    <td>{index + 1}</td>
                     <td>
                       {task?.title}
                       {task?.edited ? (
@@ -344,27 +351,45 @@ const Tasks = () => {
                     </td>
                     <td>{task?.description}</td>
                     <td>{task?.dueDate}</td>
-                    <td>{task?.userName}</td>
+                    <td>
+                      {task.assignByAdmin ? (
+                        <>
+                          <span className="badge badge-primary text-[12px]">
+                            Admin
+                          </span>
+                        </>
+                      ) : (
+                        task?.userName
+                      )}
+                    </td>
                     <td>{task?.createdBy}</td>
                     <td>
                       <button
+                        title="Edit Task"
                         onClick={() => handleEditTask(task)}
                         className="btn btn-sm btn-blue mb-1"
                         disabled={
                           user.email !== task.createdBy && !loggedUserData.admin
                         }
                       >
-                        Edit
+                        <FaPen />
                       </button>
-                      <br />
                       <button
+                        title="Delete Task"
                         onClick={() => handleDeleteTask(task.id)}
-                        className="btn btn-sm btn-blue mb-1"
+                        className="btn btn-sm btn-blue mb-1 ml-2"
                         disabled={
                           user.email !== task.createdBy && !loggedUserData.admin
                         }
                       >
-                        Delete
+                        <FaTrash />
+                      </button>
+                      <button
+                        onClick={() => handleTaskDetails(task.id)}
+                        title="Comment"
+                        className="btn btn-sm btn-blue mb-1 ml-2"
+                      >
+                        <FaCommentAlt />
                       </button>
                     </td>
                   </tr>
