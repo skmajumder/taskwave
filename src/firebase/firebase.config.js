@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_APIKEY,
@@ -14,5 +15,32 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+const messaging = getMessaging(app);
+
+function requestPermission() {
+  console.log("Requesting permission...");
+
+  Notification.requestPermission().then((permission) => {
+    if (permission === "granted") {
+      console.log("Notification permission granted.");
+      getToken(messaging, { vapidKey: import.meta.env.VITE_VAPIDKEY })
+        .then((currentToken) => {
+          if (currentToken) {
+            console.log("Token find");
+          } else {
+            console.log("Can not get token");
+          }
+        })
+        .catch((err) => {
+          console.log("An error occurred while retrieving token. ", err);
+        });
+    } else {
+      console.log("Do not have permission");
+    }
+  });
+}
+
+requestPermission();
 
 export { app, db };

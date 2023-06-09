@@ -7,7 +7,7 @@ import { updateProfile } from "firebase/auth";
 import useAuth from "../../hooks/useAuth";
 
 import { ref, push, get, set } from "firebase/database";
-import { db } from "../../firebase/firebase.config";
+import { db } from "../../firebase/firebase.config.js";
 
 const Register = () => {
   const { signUp, googleSignIn, logout } = useAuth();

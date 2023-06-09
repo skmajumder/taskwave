@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ref, onValue, push } from "firebase/database";
-import { db } from "../../firebase/firebase.config";
+import { db } from "../../firebase/firebase.config.js";
 import useAuth from "../../hooks/useAuth";
 
 const TaskDetails = () => {

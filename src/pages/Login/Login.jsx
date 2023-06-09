@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import GoogleLogin from "../../components/GoogleLogin/GoogleLogin";
 
 import { ref, push, get, set } from "firebase/database";
-import { db } from "../../firebase/firebase.config";
+import { db } from "../../firebase/firebase.config.js";
 import useAuth from "../../hooks/useAuth";
 
 const Login = () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ref, push, onValue, remove, update } from "firebase/database";
 import useAuth from "../../hooks/useAuth";
-import { db } from "../../firebase/firebase.config";
+import { db } from "../../firebase/firebase.config.js";
 import { FaExternalLinkAlt, FaPen, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -381,7 +381,9 @@ const Tasks = () => {
                         onClick={() => handleEditTask(task)}
                         className="btn btn-sm btn-blue mb-1"
                         disabled={
-                          user.email !== task.createdBy && !loggedUserData.admin
+                          (user.email !== task.createdBy &&
+                            !loggedUserData.admin) ||
+                          (task.createdBy === "admin" && !loggedUserData.admin)
                         }
                       >
                         <FaPen />
@@ -391,11 +393,14 @@ const Tasks = () => {
                         onClick={() => handleDeleteTask(task.id)}
                         className="btn btn-sm btn-blue mb-1 ml-2"
                         disabled={
-                          user.email !== task.createdBy && !loggedUserData.admin
+                          (user.email !== task.createdBy &&
+                            !loggedUserData.admin) ||
+                          (task.createdBy === "admin" && !loggedUserData.admin)
                         }
                       >
                         <FaTrash />
                       </button>
+
                       <button
                         onClick={() => handleTaskDetails(task.id)}
                         title="Comment"
