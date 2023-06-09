@@ -5,8 +5,12 @@ import { db } from "../../firebase/firebase.config";
 
 const Tasks = () => {
   const { user } = useAuth();
+  const [firebaseUser, setFirebaseUser] = useState([]);
+  const [loggedUserData, setLoggedUserData] = useState({});
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [createdBy, setCreatedBy] = useState(user?.email);
+  const [userName, setUserName] = useState(user?.displayName);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -16,8 +20,11 @@ const Tasks = () => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [dueDateFilter, setDueDateFilter] = useState("");
 
+  const isAdmin = loggedUserData.admin || false;
+
   console.log(user);
 
+  // * Read Tasks
   useEffect(() => {
     const tasksRef = ref(db, "tasks");
     onValue(tasksRef, (snapshot) => {
@@ -36,6 +43,28 @@ const Tasks = () => {
     });
   }, [showCompleted, dueDateFilter]);
 
+  // * Read User
+  useEffect(() => {
+    const usersRef = ref(db, "users");
+    onValue(usersRef, (snapshot) => {
+      const usersData = snapshot.val();
+      const usersArray = Object.keys(usersData).map((userId) => ({
+        id: userId,
+        admin: usersData[userId].admin,
+        email: usersData[userId].email,
+        name: usersData[userId].name,
+        photoUrl: usersData[userId].photoUrl,
+      }));
+      setFirebaseUser(usersArray);
+      const currentUser = usersArray.find(
+        (fbUser) => fbUser.email === user.email
+      );
+      if (currentUser) {
+        setLoggedUserData(currentUser);
+      }
+    });
+  }, []);
+
   const handleCreateTask = () => {
     const tasksRef = ref(db, "tasks");
 
@@ -43,10 +72,11 @@ const Tasks = () => {
       title: title,
       description: description,
       dueDate: dueDate,
-      createdBy: user.email,
-      userName: user.displayName,
+      createdBy: createdBy,
+      userName: userName,
       edited: false,
       completed: false,
+      assignByAdmin: isAdmin,
     };
 
     push(tasksRef, newTask)
@@ -144,6 +174,15 @@ const Tasks = () => {
     setCompleted(e.target.value);
   };
 
+  const handleTaskCreatedBy = (e) => {
+    setCreatedBy(e.target.value);
+    const assignUser = firebaseUser.find(
+      (fbUser) => fbUser.email === createdBy
+    );
+    console.log("assignUser", assignUser);
+    setUserName(assignUser.name);
+  };
+
   return (
     <>
       <section className="section section-login">
@@ -151,7 +190,7 @@ const Tasks = () => {
           <h2 className="mb-5 text-xl">Create Task</h2>
 
           <form className="mb-16">
-            <div className="mb-4">
+            <div className="mb-8">
               <label className="block text-gray-700">Title:</label>
               <input
                 type="text"
@@ -160,7 +199,7 @@ const Tasks = () => {
                 className="form-input mt-1 block w-full rounded-md shadow-sm"
               />
             </div>
-            <div className="mb-4">
+            <div className="mb-8">
               <label className="block text-gray-700">Description:</label>
               <textarea
                 value={description}
@@ -168,7 +207,7 @@ const Tasks = () => {
                 className="form-textarea mt-1 block w-full rounded-md shadow-sm"
               ></textarea>
             </div>
-            <div className="mb-4">
+            <div className="mb-8">
               <label className="block text-gray-700">Due Date:</label>
               <input
                 type="date"
@@ -177,22 +216,40 @@ const Tasks = () => {
                 className="form-input mt-1 block w-full rounded-md shadow-sm"
               />
             </div>
+            {loggedUserData.admin && (
+              <div className="mb-8">
+                <label className="block text-gray-700">Assigning Tasks</label>
+                <select
+                  value={createdBy}
+                  onChange={handleTaskCreatedBy}
+                  className="form-select form-input mt-1 block w-full rounded-md shadow-sm"
+                >
+                  {firebaseUser.map((user) => (
+                    <option key={user.id} value={user.email}>
+                      {user.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {isEdited ? (
               <>
-                <label className="block text-gray-700">Task Completed!</label>
-                <select
-                  className="form-select form-input mt-1 block w-full rounded-md shadow-sm"
-                  value={completed}
-                  onChange={handleCompletedTaskChange}
-                >
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
+                <div className="mb-8">
+                  <label className="block text-gray-700">Task Completed!</label>
+                  <select
+                    className="form-select form-input mt-1 block w-full rounded-md shadow-sm"
+                    value={completed}
+                    onChange={handleCompletedTaskChange}
+                  >
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
               </>
             ) : (
               ""
             )}
-            <div className="mb-4"></div>
+
             {isEdited ? (
               <>
                 <button
@@ -224,7 +281,7 @@ const Tasks = () => {
           </form>
 
           {/* By Completed */}
-          <div className="flex items-center">
+          <div className="flex items-center mb-5">
             <label className="mr-2">Show Completed:</label>
             <input
               type="checkbox"
@@ -234,12 +291,14 @@ const Tasks = () => {
           </div>
 
           {/* By Due Date */}
-          <div className="flex items-center">
+          <div className="flex items-center mb-5">
             <label className="mr-2">Due Date:</label>
-            <select className="form-select">
+            <select className="form-select" onChange={handleFilterDueDate}>
               <option value="">All</option>
-              {tasks.map((task) => (
-                <option value={task.dueDate}>{task.dueDate}</option>
+              {tasks.map((task, index) => (
+                <option key={index} value={task.dueDate}>
+                  {task.dueDate}
+                </option>
               ))}
             </select>
           </div>
@@ -254,6 +313,7 @@ const Tasks = () => {
                   <th>Description</th>
                   <th>Due Date</th>
                   <th>Created By</th>
+                  <th>Assign To</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -285,23 +345,24 @@ const Tasks = () => {
                     <td>{task?.description}</td>
                     <td>{task?.dueDate}</td>
                     <td>{task?.userName}</td>
+                    <td>{task?.createdBy}</td>
                     <td>
                       <button
                         onClick={() => handleEditTask(task)}
-                        className={`btn btn-sm btn-blue mb-1 ${
-                          user.email !== task.createdBy && "cursor-not-allowed"
-                        }`}
-                        disabled={user.email !== task.createdBy}
+                        className="btn btn-sm btn-blue mb-1"
+                        disabled={
+                          user.email !== task.createdBy && !loggedUserData.admin
+                        }
                       >
                         Edit
                       </button>
                       <br />
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        className={`btn btn-sm btn-blue ${
-                          user.email !== task.createdBy && "cursor-not-allowed"
-                        }`}
-                        disabled={user.email !== task.createdBy}
+                        className="btn btn-sm btn-blue mb-1"
+                        disabled={
+                          user.email !== task.createdBy && !loggedUserData.admin
+                        }
                       >
                         Delete
                       </button>
