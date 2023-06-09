@@ -12,7 +12,10 @@ const Tasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [isEdited, setIsEdited] = useState(false);
 
-  console.log(tasks);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [showCompleted, setShowCompleted] = useState(false);
+
+  console.log(user);
 
   useEffect(() => {
     const tasksRef = ref(db, "tasks");
@@ -24,8 +27,10 @@ const Tasks = () => {
           ...data[taskId],
         }));
         setTasks(taskList);
+        applyFilters(taskList);
       } else {
         setTasks([]);
+        setFilteredTasks([]);
       }
     });
   }, []);
@@ -39,6 +44,7 @@ const Tasks = () => {
       dueDate: dueDate,
       createdBy: user.email,
       edited: false,
+      completed: false,
     };
 
     push(tasksRef, newTask)
@@ -72,6 +78,14 @@ const Tasks = () => {
     setIsEdited(true);
   };
 
+  const handleCloseUpdate = () => {
+    setTitle("");
+    setDescription("");
+    setDueDate("");
+    setSelectedTask("");
+    setIsEdited(false);
+  };
+
   const handleUpdateTask = () => {
     const taskRef = ref(db, `tasks/${selectedTask.id}`);
 
@@ -81,6 +95,7 @@ const Tasks = () => {
       dueDate: dueDate,
       createdBy: selectedTask.createdBy,
       edited: true,
+      completed: true,
     };
 
     update(taskRef, updatedTask)
@@ -95,6 +110,19 @@ const Tasks = () => {
       .catch((error) => {
         console.error("Error updating task: ", error);
       });
+  };
+
+  const applyFilters = (taskList) => {
+    let filteredList = taskList;
+    if (!showCompleted) {
+      filteredList = filteredList.filter((task) => !task.completed);
+    }
+    setFilteredTasks(filteredList);
+  };
+
+  const handleFilterCompleted = () => {
+    setShowCompleted(!showCompleted);
+    applyFilters(tasks);
   };
 
   return (
@@ -139,6 +167,13 @@ const Tasks = () => {
                 >
                   Update Task
                 </button>
+                <button
+                  type="button"
+                  onClick={handleCloseUpdate}
+                  className="btn btn-indigo ml-3"
+                >
+                  Close
+                </button>
               </>
             ) : (
               <>
@@ -153,6 +188,14 @@ const Tasks = () => {
             )}
           </form>
 
+          <div className="flex items-center">
+            <label className="mr-2">Show Completed:</label>
+            <input
+              type="checkbox"
+              checked={showCompleted}
+              onChange={handleFilterCompleted}
+            />
+          </div>
           <h2>Task List</h2>
           <div className="overflow-x-auto mb-10">
             <table className="table w-full">
@@ -170,20 +213,46 @@ const Tasks = () => {
                 {tasks.map((task, index) => (
                   <tr key={task.id}>
                     <td>{index + 1}</td>
-                    <td>{task.title}</td>
+                    <td>
+                      {task.title}
+                      {task.edited ? (
+                        <>
+                          <span className="badge badge-accent badge-outline ml-3">
+                            Edited
+                          </span>
+                        </>
+                      ) : (
+                        ""
+                      )}
+                      {task.completed ? (
+                        <>
+                          <span className="badge badge-success badge-outline ml-3">
+                            Completed
+                          </span>
+                        </>
+                      ) : (
+                        ""
+                      )}
+                    </td>
                     <td>{task.description}</td>
                     <td>{task.dueDate}</td>
                     <td>{task.createdBy}</td>
                     <td>
                       <button
                         onClick={() => handleEditTask(task)}
-                        className="btn btn-sm btn-blue"
+                        className={`btn btn-sm btn-blue ${
+                          user.email !== task.createdBy && "cursor-not-allowed"
+                        }`}
+                        disabled={user.email !== task.createdBy}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        className="btn btn-sm btn-red ml-3"
+                        className={`btn btn-sm btn-blue ml-2 ${
+                          user.email !== task.createdBy && "cursor-not-allowed"
+                        }`}
+                        disabled={user.email !== task.createdBy}
                       >
                         Delete
                       </button>
