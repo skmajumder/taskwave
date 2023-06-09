@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ref, push, onValue, remove } from "firebase/database";
+import { ref, push, onValue, remove, update } from "firebase/database";
 import useAuth from "../../hooks/useAuth";
 import { db } from "../../firebase/firebase.config";
 
@@ -9,6 +9,8 @@ const Tasks = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isEdited, setIsEdited] = useState(false);
 
   console.log(tasks);
 
@@ -62,6 +64,39 @@ const Tasks = () => {
       });
   };
 
+  const handleEditTask = (task) => {
+    setTitle(task.title);
+    setDescription(task.description);
+    setDueDate(task.dueDate);
+    setSelectedTask(task);
+    setIsEdited(true);
+  };
+
+  const handleUpdateTask = () => {
+    const taskRef = ref(db, `tasks/${selectedTask.id}`);
+
+    const updatedTask = {
+      title: title,
+      description: description,
+      dueDate: dueDate,
+      createdBy: selectedTask.createdBy,
+      edited: true,
+    };
+
+    update(taskRef, updatedTask)
+      .then(() => {
+        console.log("Task updated successfully");
+        setTitle("");
+        setDescription("");
+        setDueDate("");
+        setSelectedTask(null);
+        setIsEdited(false);
+      })
+      .catch((error) => {
+        console.error("Error updating task: ", error);
+      });
+  };
+
   return (
     <>
       <section className="section section-login">
@@ -95,13 +130,27 @@ const Tasks = () => {
                 className="form-input mt-1 block w-full rounded-md shadow-sm"
               />
             </div>
-            <button
-              type="button"
-              onClick={handleCreateTask}
-              className="btn btn-indigo"
-            >
-              Create Task
-            </button>
+            {isEdited ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleUpdateTask}
+                  className="btn btn-indigo"
+                >
+                  Update Task
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCreateTask}
+                  className="btn btn-indigo"
+                >
+                  Create Task
+                </button>
+              </>
+            )}
           </form>
 
           <h2>Task List</h2>
@@ -126,7 +175,12 @@ const Tasks = () => {
                     <td>{task.dueDate}</td>
                     <td>{task.createdBy}</td>
                     <td>
-                      <button className="btn btn-sm btn-blue">Edit</button>
+                      <button
+                        onClick={() => handleEditTask(task)}
+                        className="btn btn-sm btn-blue"
+                      >
+                        Edit
+                      </button>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
                         className="btn btn-sm btn-red ml-3"

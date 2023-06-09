@@ -14,7 +14,7 @@ const TaskLayout = () => {
         <Outlet />
       </main>
       <Footer />
-      <Sugar />
+      
     </>
   );
 };
