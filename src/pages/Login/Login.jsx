@@ -1,11 +1,14 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import PageTitle from "../../components/PageTitle/PageTitle";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../contexts/AuthProvider";
 import GoogleLogin from "../../components/GoogleLogin/GoogleLogin";
 
+import { ref, push, get, set } from "firebase/database";
+import { db } from "../../firebase/firebase.config";
+import useAuth from "../../hooks/useAuth";
+
 const Login = () => {
-  const { signIn, googleSignIn } = useContext(AuthContext);
+  const { signIn, googleSignIn } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const handelPasswordVisibility = () => {
@@ -101,16 +104,43 @@ const Login = () => {
     googleSignIn()
       .then((result) => {
         const user = result.user;
-        navigate(redirectLocation);
+        const userId = user.uid;
+
+        const userRef = ref(db, `users/${userId}`);
+        get(userRef)
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              navigate("/");
+            } else {
+              const userName = user.displayName || "";
+              const userEmail = user.email || "";
+              const userPhotoUrl = user.photoURL || "";
+
+              const userData = {
+                name: userName,
+                email: userEmail,
+                photoUrl: userPhotoUrl,
+                admin: false,
+              };
+
+              set(ref(db, `users/${userId}`), userData)
+                .then(() => {
+                  navigate("/");
+                })
+                .catch((error) => {
+                  setRegisterError(error.message);
+                });
+            }
+          })
+          .catch((error) => {
+            setRegisterError(error.message);
+          });
       })
       .catch((error) => {
         setRegisterError(error.message);
       });
   };
 
-  const handlePasswordReset = () => {
-    resetPassword();
-  };
   return (
     <>
       <PageTitle pageTitle={"Sign In"} />

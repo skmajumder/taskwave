@@ -16,7 +16,7 @@ const Tasks = () => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [dueDateFilter, setDueDateFilter] = useState("");
 
-  console.log(tasks);
+  console.log(user);
 
   useEffect(() => {
     const tasksRef = ref(db, "tasks");
@@ -44,6 +44,7 @@ const Tasks = () => {
       description: description,
       dueDate: dueDate,
       createdBy: user.email,
+      userName: user.displayName,
       edited: false,
       completed: false,
     };
@@ -261,8 +262,8 @@ const Tasks = () => {
                   <tr key={task.id}>
                     <td>{index + 1}</td>
                     <td>
-                      {task.title}
-                      {task.edited ? (
+                      {task?.title}
+                      {task?.edited ? (
                         <>
                           <span className="badge badge-accent badge-outline ml-3 text-[8px]">
                             Edited
@@ -281,22 +282,23 @@ const Tasks = () => {
                         ""
                       )}
                     </td>
-                    <td>{task.description}</td>
-                    <td>{task.dueDate}</td>
-                    <td>{task.createdBy}</td>
+                    <td>{task?.description}</td>
+                    <td>{task?.dueDate}</td>
+                    <td>{task?.userName}</td>
                     <td>
                       <button
                         onClick={() => handleEditTask(task)}
-                        className={`btn btn-sm btn-blue ${
+                        className={`btn btn-sm btn-blue mb-1 ${
                           user.email !== task.createdBy && "cursor-not-allowed"
                         }`}
                         disabled={user.email !== task.createdBy}
                       >
                         Edit
                       </button>
+                      <br />
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        className={`btn btn-sm btn-blue ml-2 ${
+                        className={`btn btn-sm btn-blue ${
                           user.email !== task.createdBy && "cursor-not-allowed"
                         }`}
                         disabled={user.email !== task.createdBy}

@@ -1,13 +1,16 @@
-import React, { useContext, useState } from "react";
-import { AuthContext } from "../../contexts/AuthProvider";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageTitle from "../../components/PageTitle/PageTitle";
 import GoogleLogin from "../../components/GoogleLogin/GoogleLogin";
 import Swal from "sweetalert2";
 import { updateProfile } from "firebase/auth";
+import useAuth from "../../hooks/useAuth";
+
+import { ref, push, get, set } from "firebase/database";
+import { db } from "../../firebase/firebase.config";
 
 const Register = () => {
-  const { signUp, googleSignIn, logout } = useContext(AuthContext);
+  const { signUp, googleSignIn, logout } = useAuth();
 
   //   Show password on click
   const [showPassword, setShowPassword] = useState(false);
@@ -156,6 +159,16 @@ const Register = () => {
       .then((userCredential) => {
         const user = userCredential.user;
         Swal.fire("Successfully!", "User SignUp Successfully", "success");
+
+        // * Store user data in the Firebase Realtime Database
+        const usersRef = ref(db, "users");
+        push(usersRef, {
+          name: userName,
+          email: userEmail,
+          photoUrl: userPhotoUrl,
+          admin: false,
+        });
+
         // Set user name and photo
         handleUpdateUser(user, userName, userPhotoUrl);
         setName("");
@@ -175,7 +188,37 @@ const Register = () => {
     googleSignIn()
       .then((result) => {
         const user = result.user;
-        navigate("/");
+        const userId = user.uid;
+
+        const userRef = ref(db, `users/${userId}`);
+        get(userRef)
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              navigate("/");
+            } else {
+              const userName = user.displayName || "";
+              const userEmail = user.email || "";
+              const userPhotoUrl = user.photoURL || "";
+
+              const userData = {
+                name: userName,
+                email: userEmail,
+                photoUrl: userPhotoUrl,
+                admin: false,
+              };
+
+              set(ref(db, `users/${userId}`), userData)
+                .then(() => {
+                  navigate("/");
+                })
+                .catch((error) => {
+                  setRegisterError(error.message);
+                });
+            }
+          })
+          .catch((error) => {
+            setRegisterError(error.message);
+          });
       })
       .catch((error) => {
         setRegisterError(error.message);
